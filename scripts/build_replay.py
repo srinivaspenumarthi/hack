@@ -36,6 +36,10 @@ html=(ROOT/'web/index.html').read_text().replace('href="/style.css"','href="./st
 html=html.replace('<script src="./app.js"','<script src="./data.js"></script><script src="./replay.js"></script><script src="./app.js"')
 html=html.replace('<main>','<main><div class="notice">SAVED-RESULTS DEMO · Actual completed API outputs, not a live server. Research and provider operations run in the authenticated Python app. <a href="https://github.com/srinivaspenumarthi/hack">Source &amp; judge notebook ↗</a></div>')
 html=html.replace('Generate audio →','Load saved audio →').replace('Explain with Gemini →','Read Gemini explanation →').replace('Read live Timescale aggregates →','Read saved Timescale aggregates →')
+# Content versions prevent a browser from mixing a new HTML page with cached old reports or scripts.
+for asset,content in [('data.js',(OUT/'data.js').read_bytes()),('app.js',(ROOT/'web/app.js').read_bytes()),('style.css',(ROOT/'web/style.css').read_bytes()),('replay.js',(OUT/'replay.js').read_bytes())]:
+    import hashlib
+    html=html.replace('./'+asset+'"','./'+asset+'?v='+hashlib.sha256(content).hexdigest()[:12]+'"')
 (OUT/'index.html').write_text(html)
 for f in ['app.js','style.css']:shutil.copyfile(ROOT/'web'/f,OUT/f)
 (OUT/'.nojekyll').touch()
