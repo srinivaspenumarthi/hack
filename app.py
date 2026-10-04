@@ -12,6 +12,7 @@ from edge.runtime import PRIVATE, ROOT, config, read, settings, now, digest
 from edge.providers import connections, explain, ProviderError
 from edge.research import capital
 from edge import workflow
+from edge.readiness import assess
 
 STATIC={'/':('index.html','text/html'),'/app.js':('app.js','text/javascript'),'/style.css':('style.css','text/css')}
 LOCK=threading.Lock()
@@ -23,6 +24,7 @@ def state():
     return dict(config=cfg,connections=connections(),coverage=read('coverage.json'),
         reports={**{k:read('report-'+k+'.json') for k in ('synthetic','massive')}, 'v2development':read('report-v2-development-2024-01-01-2025-12-31.json'),'v2test':read('report-v2-test-2026-01-01-2026-08-31.json')},
         freeze_v2=read('freeze-v2.json'),audio=read('audio-latest.json'),
+        readiness={k:assess(read(n)) for k,n in {'v2development':'report-v2-development-2024-01-01-2025-12-31.json','v2test':'report-v2-test-2026-01-01-2026-08-31.json','massive':'report-massive.json','synthetic':'report-synthetic.json'}.items()},
         coverage_windows={'v2development':read('coverage-v2-2024-01-01-2025-12-31.json'),'v2test':read('coverage-v2-2026-01-01-2026-08-31.json')},
         freeze=frozen,freeze_valid=bool(frozen and frozen['config_hash']==digest(cfg) and frozen.get('research_hash',frozen['source_hash'])==workflow.source_hash()),
         database=read('database-summary.json'),job=dict(JOB),holdout='Evaluated once · Jan–Aug 2026' if read('report-v2-test-2026-01-01-2026-08-31.json') else 'Locked · Jan–Aug 2026')

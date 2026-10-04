@@ -12,6 +12,8 @@
 - [x] Beginner explanations, glossary, source explorer and portfolio display.
 - [x] Automated accounting, timestamp and web-security tests.
 - [x] Two-page Massive note, five-page Systematic Trading note and self-contained judge notebook.
+- [x] Notebook executed in a fresh kernel with only Massive credentials on the documented June-August 2023 example window.
+- [x] Source pushed and GitHub checks passed; public replay verified at https://srinivaspenumarthi.github.io/hack/.
 - [x] Static replay without secrets or raw licensed option responses; server Docker deployment configuration.
 
 ## External completion items

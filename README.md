@@ -4,6 +4,8 @@
 
 Filing Edge asks whether selling downside insurance after a share-repurchase disclosure earns enough to justify the risk. It follows an idea from source evidence through quoted execution, comparisons, capital limits and an allocation decision. It does not place orders.
 
+**[Open the published saved-results demo](https://srinivaspenumarthi.github.io/hack/)** | [Source repository](https://github.com/srinivaspenumarthi/hack)
+
 ## Actual conclusion
 
 Version 2 rejects live allocation. The development comparison had 13 matched pairs and an average difference of **−186.2 bps** of strike collateral. The held-out comparison had only 5 pairs; its positive relative difference does not establish a reliable trading edge. The event trades themselves lost money on average. The constrained held-out portfolio admitted one position and lost **$795.80 on $1 million**. Results include costs. Missing marks use conservative reserves, not fabricated fills.
@@ -37,6 +39,8 @@ python judge.py --start 2026-01-01 --end 2026-08-31 --mode test
 python judge.py --start 2023-06-01 --end 2023-08-31 --mode sealed
 python -m unittest discover -s tests -v
 ```
+
+Verified independently in a fresh kernel on the June-August 2023 example window, using only Massive credentials (see `submission/notebook-validation.json`). That example has now been inspected for software verification and is not an untouched holdout.
 
 `submission/Filing_Edge_Judge.ipynb` is self-contained: it embeds a checksummed source archive and prompts for the Massive key in a clean Python kernel. It does not require a database or any AI key. Supported event windows start March 2022 and end by the configured October 2, 2026 cutoff. Actual availability depends on Massive entitlements.
 

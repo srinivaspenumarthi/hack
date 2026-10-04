@@ -15,10 +15,11 @@ function metric(label,value,note,klass=''){return `<div class="metric"><div clas
 function render(){
  const report=state.reports[mode], cov=state.coverage_windows?.[mode]||state.coverage, running=state.job.status==='running';
  document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('selected',b.dataset.mode===mode));
- $('#runStudy').textContent=mode==='synthetic'?'Rebuild synthetic demo →':'Refresh results ↻';
+ $('#runStudy').textContent=mode==='synthetic'&&!window.FILING_REPLAY?'Rebuild synthetic demo →':'Refresh results ↻';
  $('#holdoutStatus').textContent=state.holdout;
+ const gate=state.readiness?.[mode];$('#readiness').innerHTML=gate?'<div class="readiness-grid">'+gate.checks.map(c=>'<div class="integrity-row"><span class="'+(c.passed?'positive':'negative')+'">'+(c.passed?'✓':'×')+'</span><div><strong>'+esc(c.name)+'</strong><small>'+esc(c.detail)+'</small></div></div>').join('')+'</div><p class="subtle">'+esc(gate.note)+'</p>':'<p class="subtle">A completed report is needed for the review checklist.</p>';
  $('#period').textContent=mode==='v2test'?'Held-out test · Jan–Aug 2026':'Development · 2024–2025';
- document.querySelectorAll('[data-job],#runStudy,#syncDatabase').forEach(b=>b.disabled=running);
+ document.querySelectorAll('[data-job],#syncDatabase').forEach(b=>b.disabled=running||!!window.FILING_REPLAY);$('#runStudy').disabled=running;
  $('#jobStatus').textContent=state.job.message;
  if(state.job.status==='failed'&&lastJob!==state.job.finished_at)toast(state.job.message,true);
  if(state.job.status==='complete'&&lastJob!==state.job.finished_at)toast(state.job.message);
@@ -32,7 +33,7 @@ function render(){
  $('#coverageSummary').innerHTML=cov?`<div class="coverage-stats"><div><strong>${cov.filings}</strong><span>Qualifying filings</span></div><div><strong>${cov.issuers}</strong><span>Issuers</span></div><div><strong>${cov.context_counts.adverse||0}</strong><span>With adverse tags</span></div></div><p class="subtle">${cov.context_counts.adverse?'Context groups available for inspection.':'No adverse-tag matches. The adverse-context comparison is untestable in this coverage sample.'} Filing labels can be retrospective.</p>`:empty('Collect the development filing coverage first.');
  $('#integrity').innerHTML=[['✓','Versioned research',mode.startsWith('v2')?'Original development findings disclosed before this revision.':'Archived daily-price pilot; not the final method.'],['▣',state.freeze_v2?'Version 2 method frozen':'Awaiting final freeze',state.freeze_v2?'Source '+state.freeze_v2.source_hash.slice(0,12):'No test conclusion yet.'],['▣',state.holdout,'One fixed primary hypothesis; every sensitivity is reported.'],['↗',report?'Run '+report.run_id.slice(0,10):'No completed run for this window',report?'Data hash '+report.data_hash.slice(0,12):'Do not infer a result from an empty chart.']].map(x=>`<div class="integrity-row"><span>${x[0]}</span><div><strong>${esc(x[1])}</strong><small>${esc(x[2])}</small></div></div>`).join('');
  $('#ledgerCount').textContent=report?.published_summary?'RAW LEDGER IN AUTHENTICATED APP':report?report.trades.length+' priced event observations':'NO MARKET RESULTS';
- $('#ledger').innerHTML=report?.trades.length?report.trades.map(t=>`<tr><td>${esc(t.ticker)}</td><td>${esc(t.entry)} → ${esc(t.exit)}</td><td>${money(t.strike)}</td><td>${money(t.entry_mark)} / ${money(t.exit_mark)}</td><td>${money(t.costs)}</td><td class="${sign(t.net_pnl)}">${money(t.net_pnl)}</td><td class="${sign(t.net_return)}">${pct(t.net_return)}</td></tr>`).join(''):'<tr><td colspan="7">No priced observations for this source. Missing prices are never carried forward.</td></tr>';
+ $('#ledger').innerHTML=report?.trades.length?report.trades.map(t=>`<tr><td>${esc(t.ticker)}</td><td>${esc(t.entry)} → ${esc(t.exit)}</td><td>${money(t.strike)}</td><td>${money(t.entry_mark)} / ${money(t.exit_mark)}</td><td>${money(t.costs)}</td><td class="${sign(t.net_pnl)}">${money(t.net_pnl)}</td><td class="${sign(t.net_return)}">${pct(t.net_return)}</td></tr>`).join(''):'<tr><td colspan="7">'+(report?.published_summary?'Raw option quotes are excluded from the public replay. Run the authenticated app or judge notebook to inspect individual trade accounting.':'No priced observations for this source. Missing prices are never carried forward.')+'</td></tr>';
  $('#warnings').innerHTML=(report?.warnings||['No market-return conclusion has been produced.']).map(w=>'<p>'+esc(w)+'</p>').join('')+(report?'<p>Excluded headline observations: '+esc(JSON.stringify(report.horizons.find(x=>x.horizon===21)?.unavailable))+'</p>':'');
  renderFilings();renderProviders();renderPortfolio(report);renderAudio(state.audio?.run_id===report?.run_id?state.audio:null);
 }
@@ -62,7 +63,7 @@ document.addEventListener('click',async event=>{const b=event.target.closest('bu
  if(b.dataset.job)return job(b.dataset.job);
  if(b.dataset.cell!==undefined){selectedCell=Number(b.dataset.cell);heatmap(state.reports[mode]);return;}
  if(b.dataset.event){selectedEvent=b.dataset.event;renderFilings();return;}
- if(b.id==='runStudy')return mode==='synthetic'?job('demo'):refresh();
+ if(b.id==='runStudy')return mode==='synthetic'&&!window.FILING_REPLAY?job('demo'):refresh();
  if(b.id==='makeBriefing'){b.disabled=true;try{const r=await api('briefing',{kind:mode});state.audio=r;renderAudio(r)}catch(e){toast(e.message,true)}finally{b.disabled=false}return;}
  if(b.id==='loadDatabase'){b.disabled=true;try{const r=await api('database');$('#databaseLive').innerHTML='<p>'+esc(r.source)+' · '+r.daily.length+' recent trading days</p><div class="table-wrap"><table><thead><tr><th>Day</th><th>Contract series</th><th>Option volume</th></tr></thead><tbody>'+r.daily.slice(-12).map(x=>'<tr><td>'+esc(x.day)+'</td><td>'+n(x.contracts,0)+'</td><td>'+n(x.volume,0)+'</td></tr>').join('')+'</tbody></table></div><p>'+r.runs.length+' saved research runs returned by PostgreSQL.</p>'}catch(e){toast(e.message,true)}finally{b.disabled=false}return;}
  if(b.id==='syncDatabase')return job('database-sync',{kind:mode.startsWith('v2')?'massive':mode});

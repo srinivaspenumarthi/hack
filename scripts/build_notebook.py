@@ -38,7 +38,7 @@ if not os.environ.get('MASSIVE_API_KEY'):
 from judge import run_study
 report = run_study(START_DATE, END_DATE, MODE)
 ''')
-code('''from IPython.display import display, Markdown
+code(r'''from IPython.display import display, Markdown
 import html, json
 rows = []
 for h in report['horizons']:
@@ -59,6 +59,8 @@ A positive event-minus-control average is not proof of an investable edge. Revie
 
 The raw market cache stays local. Do not publish your API key or licensed raw data. All model comparisons, cost/delay cells and expiry/moneyness sensitivities are retained in the report. The app integrations are optional explanation, storage and accessibility layers, not signal generators.
 ''')
+for i,c in enumerate(cells):
+    if c['cell_type']=='code':compile(''.join(c['source']),f'notebook-cell-{i}','exec')
 nb=dict(cells=cells,metadata={'kernelspec':{'display_name':'Python 3','language':'python','name':'python3'},'language_info':{'name':'python','version':'3.11'}},nbformat=4,nbformat_minor=5)
 for i,c in enumerate(cells):c['id']=f'filing-edge-{i}'
 (ROOT/'submission'/'Filing_Edge_Judge.ipynb').write_text(json.dumps(nb,indent=1))

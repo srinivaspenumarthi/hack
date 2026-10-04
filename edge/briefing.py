@@ -17,8 +17,12 @@ def transcript(report):
         if h.get('interval'):
             lo,hi=h['interval'];text+=f'The exploratory uncertainty interval runs from {lo*10000:.1f} to {hi*10000:.1f} basis points. '
             if lo<=0<=hi:text+='That interval includes zero, so these results do not establish a positive edge. '
+    if h.get('pairs',0)<20:
+        text+='This is a small sample, so the estimated difference is fragile. '
+    if h.get('event_return') is not None and h['event_return']<0:
+        text+='The event trades themselves lost money on average; relative outperformance is not absolute profit. '
     pf=report.get('portfolio')
-    if pf:text+=f'The capital constrained simulation admitted {pf["trade_count"]} positions. Its total account return was {pf["total_return"]*100:.2f} percent. Missing price marks received a conservative full liability reserve on {pf["stale_mark_days"]} days. '
+    if pf:text+=f'The capital constrained simulation admitted {pf["trade_count"]} position or positions. Its total account return was {pf["total_return"]*100:.2f} percent. Missing price marks received a conservative full liability reserve on {pf["stale_mark_days"]} days. '
     text+='The decision is research only. Historical classification availability and early assignment are not fully verified. An attractive average is not permission to trade. Every assumption, missing observation and cost is retained for review.'
     return text
 

@@ -1,3 +1,5 @@
+> Historical version 1 specification, preserved for audit. The submitted version 2 method and evaluated holdout are documented in README.md, protocol-v2.json and submission/research-manifest.json. Statements below about an unopened holdout describe the original pilot stage.
+
 # Draft research specification — 2026-10-03
 
 Status: written before our first backtest. Not frozen: exact taxonomy tags, matching criteria, execution assumptions and sample feasibility remain unresolved. Record all changes before freezing; do not portray this draft as a completed preregistration.

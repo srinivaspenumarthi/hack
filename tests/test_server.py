@@ -27,3 +27,11 @@ class ServerTests(unittest.TestCase):
     def test_capital_api(self,_):
         r=self.request('/api/capital','POST',{'account':100000,'spot':100,'strike':95,'premium':2,'allocation':.2},{'HTTP_X_FILING_EDGE':'1'})
         self.assertTrue(r['code'].startswith('200'));self.assertEqual(json.loads(r['body'])['contracts'],2)
+
+class ReadinessTests(unittest.TestCase):
+    def test_positive_average_does_not_authorize_trading(self):
+        from edge.readiness import assess
+        r={'kind':'massive','horizons':[{'horizon':21,'groups':{'standalone':{'edge':.1,'pairs':100,'issuers':30,'calendar_clusters':20}}}], 'portfolio':{'total_return':.1}}
+        gate=assess(r)
+        self.assertEqual(gate['decision'],'Research only')
+        self.assertEqual(gate['passed'],4)
